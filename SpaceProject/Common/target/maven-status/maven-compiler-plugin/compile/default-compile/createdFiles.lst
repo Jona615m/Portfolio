@@ -1,0 +1,8 @@
+dk/sdu/mmmi/cbse/data/World.class
+module-info.class
+dk/sdu/mmmi/cbse/service/IEntityProcessingService.class
+dk/sdu/mmmi/cbse/data/GameKeys.class
+dk/sdu/mmmi/cbse/service/IPostEntityProcessingService.class
+dk/sdu/mmmi/cbse/data/Entity.class
+dk/sdu/mmmi/cbse/data/GameData.class
+dk/sdu/mmmi/cbse/service/IGamePluginService.class

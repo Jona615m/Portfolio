@@ -30,6 +30,37 @@
             <artifactId>javafx-graphics</artifactId>
             <version>21</version>
         </dependency>
+        <dependency>
+            <groupId>dk.sdu.mmmi.cbse</groupId>
+            <artifactId>Common</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>dk.sdu.mmmi.cbse</groupId>
+            <artifactId>Player</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.6.1</version>
+                <configuration>
+                    <skip>false</skip>
+                    <executable>java</executable>
+                    <arguments>
+                        <argument>-Dorg.lwjgl.util.Debug=true</argument>
+                        <argument>-Djava.library.path=libs</argument>
+                        <argument>--module-path=../mods-mvn</argument>
+                        <argument>--class-path=libs/*</argument>
+                        <argument>--module=Main/dk.sdu.mmmi.cbse.main.Main</argument>
+                    </arguments>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>

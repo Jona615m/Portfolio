@@ -1,28 +1,157 @@
 package dk.sdu.mmmi.cbse.main;
 
 import dk.sdu.mmmi.cbse.data.Entity;
+import dk.sdu.mmmi.cbse.data.GameData;
+import dk.sdu.mmmi.cbse.data.GameKeys;
 import dk.sdu.mmmi.cbse.data.World;
-import javafx.scene.canvas.GraphicsContext;
+import dk.sdu.mmmi.cbse.service.IEntityProcessingService;
+import dk.sdu.mmmi.cbse.service.IGamePluginService;
+import dk.sdu.mmmi.cbse.service.IPostEntityProcessingService;
+import java.io.InputStream;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import javafx.animation.AnimationTimer;
+import javafx.scene.Scene;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyCode;
 import javafx.scene.paint.Color;
+import javafx.scene.layout.Pane;
+import javafx.scene.shape.Polygon;
+import javafx.scene.text.Text;
+import javafx.stage.Stage;
 
 public class Game {
-    public void render(World world, GraphicsContext gc) {
-        gc.clearRect(0, 0, 800, 600); // Clear the screen
-        for (Entity entity : world.getEntities()) {
-            double[] coords = entity.getPolygonCoordinates();
-            double x = entity.getX();
-            double y = entity.getY();
-            if (coords != null && coords.length >= 6) {
-                double[] xPoints = new double[coords.length / 2];
-                double[] yPoints = new double[coords.length / 2];
-                for (int i = 0; i < coords.length; i += 2) {
-                    xPoints[i / 2] = x + coords[i];
-                    yPoints[i / 2] = y + coords[i + 1];
-                }
-                gc.setStroke(Color.WHITE);
-                gc.strokePolygon(xPoints, yPoints, xPoints.length);
+
+    private final GameData gameData = new GameData();
+    private final World world = new World();
+    private final Map<Entity, Polygon> polygons = new ConcurrentHashMap<>();
+    private final Pane gameWindow = new Pane();
+    private final List<IGamePluginService> gamePluginServices;
+    private final List<IEntityProcessingService> entityProcessingServiceList;
+    private final List<IPostEntityProcessingService> postEntityProcessingServices;
+
+    Game(List<IGamePluginService> gamePluginServices,
+         List<IEntityProcessingService> entityProcessingServiceList,
+         List<IPostEntityProcessingService> postEntityProcessingServices) {
+        this.gamePluginServices = gamePluginServices;
+        this.entityProcessingServiceList = entityProcessingServiceList;
+        this.postEntityProcessingServices = postEntityProcessingServices;
+    }
+
+    public void start(Stage window) {
+        InputStream backgroundStream = getClass().getResourceAsStream("/spaceprojekt.png");
+        if (backgroundStream != null) {
+            ImageView backgroundImageView = new ImageView(new Image(backgroundStream));
+            backgroundImageView.setFitWidth(gameData.getDisplayWidth());
+            backgroundImageView.setFitHeight(gameData.getDisplayHeight());
+            backgroundImageView.setPreserveRatio(false);
+            gameWindow.getChildren().add(backgroundImageView);
+        }
+
+        Scene scene = new Scene(gameWindow);
+        scene.setOnKeyPressed(event -> {
+            if (event.getCode().equals(KeyCode.LEFT)) {
+                gameData.getKeys().setKey(GameKeys.LEFT, true);
             }
+            if (event.getCode().equals(KeyCode.RIGHT)) {
+                gameData.getKeys().setKey(GameKeys.RIGHT, true);
+            }
+            if (event.getCode().equals(KeyCode.UP)) {
+                gameData.getKeys().setKey(GameKeys.UP, true);
+            }
+            if (event.getCode().equals(KeyCode.SPACE)) {
+                gameData.getKeys().setKey(GameKeys.SPACE, true);
+            }
+        });
+        scene.setOnKeyReleased(event -> {
+            if (event.getCode().equals(KeyCode.LEFT)) {
+                gameData.getKeys().setKey(GameKeys.LEFT, false);
+            }
+            if (event.getCode().equals(KeyCode.RIGHT)) {
+                gameData.getKeys().setKey(GameKeys.RIGHT, false);
+            }
+            if (event.getCode().equals(KeyCode.UP)) {
+                gameData.getKeys().setKey(GameKeys.UP, false);
+            }
+            if (event.getCode().equals(KeyCode.SPACE)) {
+                gameData.getKeys().setKey(GameKeys.SPACE, false);
+            }
+
+        });
+
+        for (IGamePluginService iGamePlugin : getGamePluginServices()) {
+            iGamePlugin.start(gameData, world);
+        }
+        for (Entity entity : world.getEntities()) {
+            Polygon polygon = new Polygon(entity.getPolygonCoordinates());
+            polygon.setStroke(Color.WHITE);
+            polygon.setFill(Color.WHITE);
+            polygons.put(entity, polygon);
+            gameWindow.getChildren().add(polygon);
+        }
+        window.setScene(scene);
+        window.setTitle("Spaceprojekt");
+        window.show();
+        gameWindow.requestFocus();
+    }
+
+    public void render() {
+        new AnimationTimer() {
+            @Override
+            public void handle(long now) {
+                update();
+                draw();
+                gameData.getKeys().update();
+            }
+
+        }.start();
+    }
+
+    private void update() {
+        for (IEntityProcessingService entityProcessorService : getEntityProcessingServices()) {
+            entityProcessorService.process(gameData, world);
+        }
+        for (IPostEntityProcessingService postEntityProcessorService : getPostEntityProcessingServices()) {
+            postEntityProcessorService.process(gameData, world);
         }
     }
-}
 
+    private void draw() {
+        for (Entity polygonEntity : polygons.keySet()) {
+            if (!world.getEntities().contains(polygonEntity)) {
+                Polygon removedPolygon = polygons.get(polygonEntity);
+                polygons.remove(polygonEntity);
+                gameWindow.getChildren().remove(removedPolygon);
+            }
+        }
+
+        for (Entity entity : world.getEntities()) {
+            Polygon polygon = polygons.get(entity);
+            if (polygon == null) {
+                polygon = new Polygon(entity.getPolygonCoordinates());
+                polygon.setStroke(Color.WHITE);
+                polygon.setFill(Color.WHITE);
+                polygons.put(entity, polygon);
+                gameWindow.getChildren().add(polygon);
+            }
+            polygon.setTranslateX(entity.getX());
+            polygon.setTranslateY(entity.getY());
+            polygon.setRotate(entity.getRotation());
+        }
+
+    }
+
+    public List<IGamePluginService> getGamePluginServices() {
+        return gamePluginServices;
+    }
+
+    public List<IEntityProcessingService> getEntityProcessingServices() {
+        return entityProcessingServiceList;
+    }
+
+    public List<IPostEntityProcessingService> getPostEntityProcessingServices() {
+        return postEntityProcessingServices;
+    }
+}

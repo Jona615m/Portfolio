@@ -17,6 +17,7 @@
         <module>Collision</module>
         <module>Player</module>
         <module>CommonAstroids</module>
+        <module>CommonBullet</module>
     </modules>
 
 

@@ -2,6 +2,7 @@ module Main {
     requires javafx.graphics;
     requires Common;
     requires Asteroid;
+    requires Bullets;
     requires Player;
     requires spring.context;
     uses dk.sdu.mmmi.cbse.service.IEntityProcessingService;

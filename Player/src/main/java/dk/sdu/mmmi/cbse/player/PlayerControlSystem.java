@@ -1,10 +1,12 @@
-package dk.sdu.mmmi.cbse;
+package dk.sdu.mmmi.cbse.player;
 
+import dk.sdu.mmmi.cbse.bullet.IBulletService;
 import dk.sdu.mmmi.cbse.data.Entity;
 import dk.sdu.mmmi.cbse.data.GameData;
 import dk.sdu.mmmi.cbse.data.GameKeys;
 import dk.sdu.mmmi.cbse.data.World;
 import dk.sdu.mmmi.cbse.service.IEntityProcessingService;
+import java.util.ServiceLoader;
 
 public class PlayerControlSystem implements IEntityProcessingService{
 
@@ -23,6 +25,15 @@ public class PlayerControlSystem implements IEntityProcessingService{
                 double changeY = Math.sin(Math.toRadians(player.getRotation()));
                 player.setX(player.getX() + changeX);
                 player.setY(player.getY() + changeY);
+            }
+
+            if (gameData.getKeys().isPressed(GameKeys.SPACE)) {
+                for (IBulletService bulletService : ServiceLoader.load(IBulletService.class)) {
+                    Entity bullet = bulletService.createBullet(player, gameData);
+                    if (bullet != null) {
+                        world.addEntity(bullet);
+                    }
+                }
             }
 
         if (player.getX() < 0) {

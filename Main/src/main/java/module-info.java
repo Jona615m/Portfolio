@@ -4,6 +4,7 @@ module Main {
     requires Asteroid;
     requires Bullets;
     requires Player;
+    requires Collision;
     requires spring.context;
     uses dk.sdu.mmmi.cbse.service.IEntityProcessingService;
     uses dk.sdu.mmmi.cbse.service.IGamePluginService;

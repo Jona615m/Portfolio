@@ -36,6 +36,10 @@ public class PlayerControlSystem implements IEntityProcessingService{
                 }
             }
 
+            if (player instanceof Player p) {
+                p.Cooldown();
+            }
+
         if (player.getX() < 0) {
             player.setX(1);
         }
@@ -51,6 +55,8 @@ public class PlayerControlSystem implements IEntityProcessingService{
         if (player.getY() > gameData.getDisplayHeight()) {
             player.setY(gameData.getDisplayHeight()-1);
         }
+
+
 
 
         }

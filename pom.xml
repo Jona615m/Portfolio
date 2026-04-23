@@ -18,6 +18,7 @@
         <module>Player</module>
         <module>CommonAstroids</module>
         <module>CommonBullet</module>
+        <module>Monitoring</module>
     </modules>
 
 

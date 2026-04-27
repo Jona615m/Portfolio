@@ -7,19 +7,20 @@ import dk.sdu.mmmi.cbse.data.World;
 import dk.sdu.mmmi.cbse.service.IEntityProcessingService;
 import dk.sdu.mmmi.cbse.service.IGamePluginService;
 import dk.sdu.mmmi.cbse.service.IPostEntityProcessingService;
+import dk.sdu.mmmi.cbse.service.IMoniteringService;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import javafx.animation.AnimationTimer;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
-import javafx.scene.paint.Color;
 import javafx.scene.layout.Pane;
+import javafx.scene.paint.Color;
 import javafx.scene.shape.Polygon;
-import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
 public class Game {
@@ -28,16 +29,20 @@ public class Game {
     private final World world = new World();
     private final Map<Entity, Polygon> polygons = new ConcurrentHashMap<>();
     private final Pane gameWindow = new Pane();
+    private final Pane hudLayer = new Pane();
     private final List<IGamePluginService> gamePluginServices;
     private final List<IEntityProcessingService> entityProcessingServiceList;
     private final List<IPostEntityProcessingService> postEntityProcessingServices;
+    private final List<IMoniteringService> moniteringServices;
 
     Game(List<IGamePluginService> gamePluginServices,
          List<IEntityProcessingService> entityProcessingServiceList,
-         List<IPostEntityProcessingService> postEntityProcessingServices) {
+         List<IPostEntityProcessingService> postEntityProcessingServices,
+         List<IMoniteringService> moniteringServices) {
         this.gamePluginServices = gamePluginServices;
         this.entityProcessingServiceList = entityProcessingServiceList;
         this.postEntityProcessingServices = postEntityProcessingServices;
+        this.moniteringServices = moniteringServices;
     }
 
     public void start(Stage window) {
@@ -49,6 +54,8 @@ public class Game {
             backgroundImageView.setPreserveRatio(false);
             gameWindow.getChildren().add(backgroundImageView);
         }
+        hudLayer.setMouseTransparent(true);
+        gameWindow.getChildren().add(hudLayer);
 
         Scene scene = new Scene(gameWindow);
         scene.setOnKeyPressed(event -> {
@@ -91,6 +98,13 @@ public class Game {
             polygons.put(entity, polygon);
             gameWindow.getChildren().add(polygon);
         }
+        for (IMoniteringService moniteringService : moniteringServices) {
+            moniteringService.reset();
+            if (moniteringService instanceof Node node) {
+                hudLayer.getChildren().add(node);
+            }
+        }
+        hudLayer.toFront();
         window.setScene(scene);
         window.setTitle("Spaceprojekt");
         window.show();
@@ -99,8 +113,22 @@ public class Game {
 
     public void render() {
         new AnimationTimer() {
+            private long last;
+
             @Override
             public void handle(long now) {
+                if (last == 0L) {
+                    last = now;
+                    return;
+                }
+
+                double dt = (now - last) / 1_000_000_000.0;
+                last = now;
+
+                for (IMoniteringService moniteringService : moniteringServices) {
+                    moniteringService.OnFrame(dt);
+                }
+
                 update();
                 draw();
                 gameData.getKeys().update();
@@ -140,6 +168,8 @@ public class Game {
             polygon.setTranslateY(entity.getY());
             polygon.setRotate(entity.getRotation());
         }
+
+        hudLayer.toFront();
 
     }
 

@@ -19,11 +19,10 @@ public class EnemyPlugin implements IGamePluginService {
 
     private Enemy createEnemy(GameData gameData) {
         Enemy enemy = new Enemy();
-        enemy.setPolygonCoordinates(-6, -6, 6, -6, 6, 6, -6, 6);
-        enemy.setX(100);
-        enemy.setY(100);
+        enemy.setPolygonCoordinates(-5, -5, 10, 0, -5, 5);
+        enemy.setX((double) gameData.getDisplayHeight() / 2);
+        enemy.setY((double) gameData.getDisplayWidth() / 2);
         enemy.setRadius(8);
-        enemy.setRotation(0);
         return enemy;
         }
 

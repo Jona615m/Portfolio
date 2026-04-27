@@ -2,6 +2,7 @@ package dk.sdu.mmmi.cbse.main;
 
 import dk.sdu.mmmi.cbse.service.IEntityProcessingService;
 import dk.sdu.mmmi.cbse.service.IGamePluginService;
+import dk.sdu.mmmi.cbse.service.IMoniteringService;
 import dk.sdu.mmmi.cbse.service.IPostEntityProcessingService;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,8 +16,9 @@ public class ModuleConfig {
     @Bean
     public Game game(List<IGamePluginService> gamePluginServices,
                      List<IEntityProcessingService> entityProcessingServices,
-                     List<IPostEntityProcessingService> postEntityProcessingServices) {
-        return new Game(gamePluginServices, entityProcessingServices, postEntityProcessingServices);
+                     List<IPostEntityProcessingService> postEntityProcessingServices,
+                     List<IMoniteringService> moniteringServices) {
+        return new Game(gamePluginServices, entityProcessingServices, postEntityProcessingServices, moniteringServices);
     }
 
     @Bean
@@ -32,6 +34,11 @@ public class ModuleConfig {
     @Bean
     public List<IPostEntityProcessingService> postEntityProcessingServices() {
         return loadServices(IPostEntityProcessingService.class);
+    }
+
+    @Bean
+    public List<IMoniteringService> moniteringServices() {
+        return loadServices(IMoniteringService.class);
     }
 
     private static <T> List<T> loadServices(Class<T> serviceType) {

@@ -4,6 +4,8 @@ import dk.sdu.mmmi.cbse.data.Entity;
 
 public class Enemy extends Entity {
 
+	//All being used inside the EnemyControlSystem
+
 	private double moveAngle;
 	private int moveTicks;
 	private int shotCooldown;

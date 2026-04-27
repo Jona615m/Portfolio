@@ -29,7 +29,7 @@ public class Game {
     private final World world = new World();
     private final Map<Entity, Polygon> polygons = new ConcurrentHashMap<>();
     private final Pane gameWindow = new Pane();
-    private final Pane hudLayer = new Pane();
+    private final Pane hudLayer = new Pane(); //hudLayer is used to display the hud and is on top of the gameWindow
     private final List<IGamePluginService> gamePluginServices;
     private final List<IEntityProcessingService> entityProcessingServiceList;
     private final List<IPostEntityProcessingService> postEntityProcessingServices;
@@ -113,6 +113,7 @@ public class Game {
 
     public void render() {
         new AnimationTimer() {
+            //Called last bc it stores the last values and calculates the dt for the next frame
             private long last;
 
             @Override
@@ -121,10 +122,10 @@ public class Game {
                     last = now;
                     return;
                 }
-
+                //1_000_000_000.0 converts nanoseconds to seconds
                 double dt = (now - last) / 1_000_000_000.0;
                 last = now;
-
+                //For each element in moniteringservice call the onframe method in dt
                 for (IMoniteringService moniteringService : moniteringServices) {
                     moniteringService.OnFrame(dt);
                 }

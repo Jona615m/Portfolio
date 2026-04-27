@@ -13,6 +13,8 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class EnemyControlSystem implements IEntityProcessingService {
 
+
+    //
     private static final int RESPAWN_TICKS = 300; // ~5 seconds at ~60 FPS
     private static final double ENEMY_SPEED = 0.5;
     private static final int MIN_MOVE_TICKS = 20;
@@ -88,7 +90,8 @@ public class EnemyControlSystem implements IEntityProcessingService {
         enemy.setY(enemy.getY() + changeY);
         enemy.setMoveTicks(enemy.getMoveTicks() - 1);
 
-        // Keep enemies on screen and force a new direction when they hit a boundary.
+
+        //if an enemy hits a boundary its being forced a new direction
         boolean hitBoundary = false;
         if (enemy.getX() < 1) {
             enemy.setX(1);
@@ -121,9 +124,11 @@ public class EnemyControlSystem implements IEntityProcessingService {
         double dx = player.getX() - enemy.getX();
         double dy = player.getY() - enemy.getY();
         double baseAngle = Math.toDegrees(Math.atan2(dy, dx));
+        //Spread is added to make the enemy not accurate, where -AIM_SPREAD_DEGREES and AIM_SPREAD_DEGREES to the player
         double spread = ThreadLocalRandom.current().nextDouble(-AIM_SPREAD_DEGREES, AIM_SPREAD_DEGREES);
         enemy.setRotation(baseAngle + spread);
 
+        //ThreadLocalRandom is used to make sure the enemy isn't shooting everytime but by chance
         if (ThreadLocalRandom.current().nextDouble() < SHOOT_CHANCE) {
             for (IBulletService bulletService : bulletServices) {
                 Entity bullet = bulletService.createBullet(enemy, gameData);
@@ -133,6 +138,7 @@ public class EnemyControlSystem implements IEntityProcessingService {
             }
         }
 
+        //The shot cooldown is reset after the enemy has shot, so it doesn't shoot every tick
         enemy.setShotCooldown(ThreadLocalRandom.current().nextInt(MIN_SHOOT_COOLDOWN, MAX_SHOOT_COOLDOWN + 1));
     }
 

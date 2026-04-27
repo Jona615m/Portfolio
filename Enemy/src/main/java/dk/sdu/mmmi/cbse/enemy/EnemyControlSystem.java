@@ -16,8 +16,10 @@ public class EnemyControlSystem implements IEntityProcessingService {
     private static final double ENEMY_SPEED = 0.5;
     private static final int MIN_MOVE_TICKS = 20;
     private static final int MAX_MOVE_TICKS = 200;
-    private static final int MIN_SHOOT_COOLDOWN = 50;
-    private static final int MAX_SHOOT_COOLDOWN = 100;
+    private static final int MIN_SHOOT_COOLDOWN = 130;
+    private static final int MAX_SHOOT_COOLDOWN = 240;
+    private static final double AIM_SPREAD_DEGREES = 32.0;
+    private static final double SHOOT_CHANCE = 0.6;
 
     @Override
     public void process(GameData gameData, World world) {
@@ -89,12 +91,16 @@ public class EnemyControlSystem implements IEntityProcessingService {
 
         double dx = player.getX() - enemy.getX();
         double dy = player.getY() - enemy.getY();
-        enemy.setRotation(Math.toDegrees(Math.atan2(dy, dx)));
+        double baseAngle = Math.toDegrees(Math.atan2(dy, dx));
+        double spread = ThreadLocalRandom.current().nextDouble(-AIM_SPREAD_DEGREES, AIM_SPREAD_DEGREES);
+        enemy.setRotation(baseAngle + spread);
 
-        for (IBulletService bulletService : bulletServices) {
-            Entity bullet = bulletService.createBullet(enemy, gameData);
-            if (bullet != null) {
-                world.addEntity(bullet);
+        if (ThreadLocalRandom.current().nextDouble() < SHOOT_CHANCE) {
+            for (IBulletService bulletService : bulletServices) {
+                Entity bullet = bulletService.createBullet(enemy, gameData);
+                if (bullet != null) {
+                    world.addEntity(bullet);
+                }
             }
         }
 

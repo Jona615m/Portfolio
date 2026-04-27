@@ -16,6 +16,7 @@ public class BulletSystem implements IBulletService, IEntityProcessingService {
         bullet.setPolygonCoordinates(1, 1, -1, 1, -1, -1, 1, -1);
         bullet.setRadius(1);
         bullet.setRotation(e.getRotation());
+        bullet.setShooterId(e.getID());
 
         double changeX = Math.cos(Math.toRadians(e.getRotation()));
         double changeY = Math.sin(Math.toRadians(e.getRotation()));

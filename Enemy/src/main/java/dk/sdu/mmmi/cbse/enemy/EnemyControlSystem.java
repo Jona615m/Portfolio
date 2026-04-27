@@ -13,6 +13,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class EnemyControlSystem implements IEntityProcessingService {
 
+    private static final int RESPAWN_TICKS = 300; // ~5 seconds at ~60 FPS
     private static final double ENEMY_SPEED = 0.5;
     private static final int MIN_MOVE_TICKS = 20;
     private static final int MAX_MOVE_TICKS = 200;
@@ -21,9 +22,12 @@ public class EnemyControlSystem implements IEntityProcessingService {
     private static final double AIM_SPREAD_DEGREES = 32.0;
     private static final double SHOOT_CHANCE = 0.6;
 
+    private int respawnTicksRemaining = -1;
+
     @Override
     public void process(GameData gameData, World world) {
         Entity player = null;
+        int enemyCount = 0;
         List<IBulletService> bulletServices = new ArrayList<>();
         ServiceLoader.load(IBulletService.class).forEach(bulletServices::add);
 
@@ -39,12 +43,37 @@ public class EnemyControlSystem implements IEntityProcessingService {
                 continue;
             }
 
+            enemyCount++;
+
             updateRandomMovement(enemy, gameData);
             if (player != null) {
                 tryShootAtPlayer(enemy, player, gameData, world, bulletServices);
             }
         }
 
+        handleRespawn(gameData, world, enemyCount);
+
+    }
+
+    private void handleRespawn(GameData gameData, World world, int enemyCount) {
+        if (enemyCount > 0) {
+            respawnTicksRemaining = -1;
+            return;
+        }
+
+        if (respawnTicksRemaining < 0) {
+            respawnTicksRemaining = RESPAWN_TICKS;
+            return;
+        }
+
+        respawnTicksRemaining--;
+        if (respawnTicksRemaining <= 0) {
+            Entity enemy = createEnemy(null, gameData);
+            if (enemy != null) {
+                world.addEntity(enemy);
+            }
+            respawnTicksRemaining = -1;
+        }
     }
 
     private void updateRandomMovement(Enemy enemy, GameData gameData) {
@@ -109,6 +138,12 @@ public class EnemyControlSystem implements IEntityProcessingService {
 
     @Override
     public Entity createEnemy(Entity shooter, GameData gameData) {
-        return null;
+        Enemy enemy = new Enemy();
+        enemy.setPolygonCoordinates(-5, -5, 10, 0, -5, 5);
+        enemy.setX(ThreadLocalRandom.current().nextDouble(20, gameData.getDisplayWidth() - 20));
+        enemy.setY(ThreadLocalRandom.current().nextDouble(20, gameData.getDisplayHeight() - 20));
+        enemy.setRadius(8);
+        enemy.setShotCooldown(ThreadLocalRandom.current().nextInt(MIN_SHOOT_COOLDOWN, MAX_SHOOT_COOLDOWN + 1));
+        return enemy;
     }
 }

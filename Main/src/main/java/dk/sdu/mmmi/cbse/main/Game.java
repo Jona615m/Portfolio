@@ -4,16 +4,16 @@ import dk.sdu.mmmi.cbse.data.Entity;
 import dk.sdu.mmmi.cbse.data.GameData;
 import dk.sdu.mmmi.cbse.data.GameKeys;
 import dk.sdu.mmmi.cbse.data.World;
+import dk.sdu.mmmi.cbse.scoring.Scoring;
 import dk.sdu.mmmi.cbse.service.IEntityProcessingService;
 import dk.sdu.mmmi.cbse.service.IGamePluginService;
 import dk.sdu.mmmi.cbse.service.IPostEntityProcessingService;
-import dk.sdu.mmmi.cbse.service.IMoniteringService;
+
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import javafx.animation.AnimationTimer;
-import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -21,6 +21,9 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Polygon;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
+import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
 public class Game {
@@ -29,20 +32,20 @@ public class Game {
     private final World world = new World();
     private final Map<Entity, Polygon> polygons = new ConcurrentHashMap<>();
     private final Pane gameWindow = new Pane();
-    private final Pane hudLayer = new Pane(); //hudLayer is used to display the hud and is on top of the gameWindow
+    private final Pane hudLayer = new Pane();//hudLayer is used to display the hud and is on top of the gameWindow
+    private final Text score = new Text("Score: 0");
     private final List<IGamePluginService> gamePluginServices;
     private final List<IEntityProcessingService> entityProcessingServiceList;
     private final List<IPostEntityProcessingService> postEntityProcessingServices;
-    private final List<IMoniteringService> moniteringServices;
+
 
     Game(List<IGamePluginService> gamePluginServices,
          List<IEntityProcessingService> entityProcessingServiceList,
-         List<IPostEntityProcessingService> postEntityProcessingServices,
-         List<IMoniteringService> moniteringServices) {
+         List<IPostEntityProcessingService> postEntityProcessingServices) {
         this.gamePluginServices = gamePluginServices;
         this.entityProcessingServiceList = entityProcessingServiceList;
         this.postEntityProcessingServices = postEntityProcessingServices;
-        this.moniteringServices = moniteringServices;
+
     }
 
     public void start(Stage window) {
@@ -56,6 +59,14 @@ public class Game {
         }
         hudLayer.setMouseTransparent(true);
         gameWindow.getChildren().add(hudLayer);
+
+        score.setX(20);
+        score.setY(20);
+        score.setFill(Color.TRANSPARENT);
+        score.setFont(Font.font("Verdana", FontWeight.BOLD, 20));
+        score.setFill(Color.GREEN);
+        hudLayer.getChildren().add(score);
+
 
         Scene scene = new Scene(gameWindow);
         scene.setOnKeyPressed(event -> {
@@ -97,12 +108,7 @@ public class Game {
             polygon.setFill(Color.WHITE);
             polygons.put(entity, polygon);
             gameWindow.getChildren().add(polygon);
-        }
-        for (IMoniteringService moniteringService : moniteringServices) {
-            moniteringService.reset();
-            if (moniteringService instanceof Node node) {
-                hudLayer.getChildren().add(node);
-            }
+
         }
         hudLayer.toFront();
         window.setScene(scene);
@@ -125,10 +131,6 @@ public class Game {
                 //1_000_000_000.0 converts nanoseconds to seconds
                 double dt = (now - last) / 1_000_000_000.0;
                 last = now;
-                //For each element in moniteringservice call the onframe method in dt
-                for (IMoniteringService moniteringService : moniteringServices) {
-                    moniteringService.OnFrame(dt);
-                }
 
                 update();
                 draw();

@@ -19,6 +19,7 @@
         <module>CommonAstroids</module>
         <module>CommonBullet</module>
         <module>Scoring</module>
+        <module>ScoringService</module>
     </modules>
 
 

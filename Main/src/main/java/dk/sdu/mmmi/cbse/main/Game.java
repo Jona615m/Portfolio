@@ -171,7 +171,7 @@ public class Game {
             polygon.setTranslateY(entity.getY());
             polygon.setRotate(entity.getRotation());
         }
-
+        score.setText("Score: " + Scoring.getScore());
         hudLayer.toFront();
 
     }

@@ -4,6 +4,10 @@ import dk.sdu.mmmi.cbse.data.Entity;
 
 public class Enemy extends Entity {
 
+	public static final int MAX_HEALTH = 3;
+
+	private int health = MAX_HEALTH;
+
 	//All being used inside the EnemyControlSystem
 
 	private double moveAngle;
@@ -33,4 +37,18 @@ public class Enemy extends Entity {
 	public void setShotCooldown(int shotCooldown) {
 		this.shotCooldown = shotCooldown;
 	}
+
+			public int getHealth() {
+				return health;
+			}
+
+			public void takeDamage() {
+				if (health > 0) {
+					health--;
+				}
+			}
+
+			public boolean isDead() {
+				return health <= 0;
+			}
 }

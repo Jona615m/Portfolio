@@ -14,7 +14,7 @@ public class AsteroidSplitter implements IAsteroidSplitter {
         }
 
         Asteroid.Size nextSize = asteroid.getSize().nextSmaller();
-        double[] angle = {-25, 0, 25}; //Gives us 3 smaller asteroids when hit
+        double[] angle = {-20, 20}; // Split into two smaller asteroids
 
         for(double angle1 : angle) {
             Asteroid smaller = new Asteroid();

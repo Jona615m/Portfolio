@@ -6,7 +6,6 @@ module Main {
     requires Player;
     requires Enemy;
     requires Collision;
-    requires Monitoring;
     requires spring.context;
     uses dk.sdu.mmmi.cbse.service.IEntityProcessingService;
     uses dk.sdu.mmmi.cbse.service.IGamePluginService;

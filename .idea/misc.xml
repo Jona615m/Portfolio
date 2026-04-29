@@ -11,6 +11,7 @@
       <set>
         <option value="$PROJECT_DIR$/Asteroids/pom.xml" />
         <option value="$PROJECT_DIR$/Asteroids3/pom.xml" />
+        <option value="$PROJECT_DIR$/Monitoring/pom.xml" />
       </set>
     </option>
   </component>
